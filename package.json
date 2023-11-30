@@ -1,0 +1,31 @@
+{
+  "name": "youtube_api_timing",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "usefull utilites",
+  "dependencies": {
+    "iso8601-duration": "^2.1.1",
+    "undici": "^5.28.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "globals": "^13.22.0",
+    "npm-check-updates": "^16.14.4"
+  },
+  "scripts": {
+    "time": "node time.js",
+    "style": "npx eslint .",
+    "style:fix": "npx eslint . --fix",
+    "updates": "npx ncu",
+    "updates:fix": "npx ncu -u && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asavan/filmutils.git"
+  },
+  "author": "asavan",
+  "bugs": {
+    "url": "https://github.com/asavan/filmutils/issues"
+  },
+  "homepage": "https://github.com/asavan/filmutils#readme"
+}

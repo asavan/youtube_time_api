@@ -2,7 +2,7 @@
   "name": "youtube_api_timing",
   "version": "1.0.0",
   "type": "module",
-  "description": "usefull utilites",
+  "description": "calc time spent on youtube",
   "dependencies": {
     "iso8601-duration": "^2.1.1",
     "undici": "^5.28.1"
@@ -13,7 +13,7 @@
     "npm-check-updates": "^16.14.4"
   },
   "scripts": {
-    "time": "node time.js",
+    "start": "node youtube_time_api.js",
     "style": "npx eslint .",
     "style:fix": "npx eslint . --fix",
     "updates": "npx ncu",
@@ -21,11 +21,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/asavan/filmutils.git"
+    "url": "git+https://github.com/asavan/youtube_time_api.git"
   },
   "author": "asavan",
   "bugs": {
-    "url": "https://github.com/asavan/filmutils/issues"
+    "url": "https://github.com/asavan/youtube_time_api/issues"
   },
-  "homepage": "https://github.com/asavan/filmutils#readme"
+  "homepage": "https://github.com/asavan/youtube_time_api#readme"
 }

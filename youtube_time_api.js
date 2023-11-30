@@ -4,7 +4,7 @@ import { open } from "node:fs/promises";
 import { parse, toSeconds } from "iso8601-duration";
 import { fetch, setGlobalDispatcher, Agent} from "undici";
 
-setGlobalDispatcher(new Agent({connect: { timeout: 60_000 }}));
+setGlobalDispatcher(new Agent({connect: { timeout: 80_000 }}));
 
 
 const toHHMMSS = (sec_num) => {

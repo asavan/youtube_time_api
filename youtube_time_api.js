@@ -50,8 +50,17 @@ const api_url = "https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fiel
 
 function parse_id_from_line(text) {
     const line = text.split(/\s+/)[0];
-    const line1 = line.replaceAll("https://www.youtube.com/watch?v=", "");
-    return line1.replace("https://www.youtube.com/shorts/", "");
+    const url = new URL(line);
+    if (!url.hostname.includes("youtube.com")) {
+        return "";
+    }
+    const params = url.searchParams;
+    
+    const id = params.get("v");
+    if (id) {
+        return id;
+    }    
+    return url.pathname.replace("/shorts/", "");
 }
 
 async function parse_one_file(filename) {

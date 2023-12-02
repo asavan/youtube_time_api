@@ -20,25 +20,48 @@ const toHHMMSS = (sec_num) => {
 };
 
 
-async function myFileReader(filename) {
+async function vidReader(filename) {
     const ids = [];
     let parse_next_line = false;
-
+    
     const file = await open(filename);
-    for await (const line of file.readLines()) {
-        if (parse_next_line) {
-            const id = parse_id_from_line(line);
+    try {
+        for await (const line of file.readLines()) {
+            if (parse_next_line) {
+                const id = parse_id_from_line(line);
+                if (id !== "") {
+                    ids.push(id);
+                } else {
+                    console.error("unknown format", line);
+                }
+                parse_next_line = false;
+            }
+            if (line === "```vid") {
+                parse_next_line = true;
+            }
+        }
+    } finally {
+        await file?.close();
+    }  
+    return ids;
+}
+
+async function shortReader(filename) {
+    const ids = [];
+    let parse_next_line = false;
+    
+    const file = await open(filename);
+    try {
+        for await (const line of file.readLines()) {            
+            const id = parse_short_id_from_line(line);
             if (id !== "") {
                 ids.push(id);
-            } else {
-                console.error("unknown format", line);
             }
-            parse_next_line = false;
         }
-        if (line === "```vid") {
-            parse_next_line = true;
-        }
-    }
+    } finally {
+        await file?.close();
+    }  
+    console.log(ids);
     return ids;
 }
 
@@ -52,19 +75,34 @@ function parse_id_from_line(text) {
     const line = text.split(/\s+/)[0];
     const url = new URL(line);
     if (!url.hostname.includes("youtube.com")) {
+        if (url.hostname.includes("youtu.be")) {
+            return url.pathname.replace("/", "");
+        }
         return "";
     }
-    const params = url.searchParams;
     
-    const id = params.get("v");
+    const id = url.searchParams.get("v");
     if (id) {
         return id;
     }    
     return url.pathname.replace("/shorts/", "");
 }
 
-async function parse_one_file(filename) {
-    const ids = await myFileReader(filename);
+function parse_short_id_from_line(text) {
+    const regexpYou = new RegExp("https://www.youtube.com/watch\\?v=([\\w-]+)");
+    const match = text.match(regexpYou);
+    if (match === null) {
+        return "";
+    }
+    const id = match[1];
+    if (id) {
+        return id;
+    }
+    return "";
+}
+
+async function parse_one_file(filename, reader) {
+    const ids = await reader(filename);
     if (ids.length === 0) {
         return "";
     }
@@ -78,7 +116,12 @@ async function parse_one_file(filename) {
 }
 
 async function main() {
-    const res = await parse_one_file(process.argv[2] || "2023-11-29.md");
+    if (process.argv[3] === "short") {        
+        const res = await parse_one_file(process.argv[2], shortReader);
+        console.log(res);
+        return;        
+    }
+    const res = await parse_one_file(process.argv[2] || "2023-11-29.md", vidReader);
     console.log(res);
 }
 

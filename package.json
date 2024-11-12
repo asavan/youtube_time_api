@@ -4,20 +4,23 @@
   "type": "module",
   "description": "calc time spent on youtube",
   "dependencies": {
-    "iso8601-duration": "^2.1.1",
-    "undici": "^5.28.1"
+    "iso8601-duration": "^2.1.2",
+    "undici": "^6.20.1"
   },
   "devDependencies": {
-    "eslint": "^8.50.0",
-    "globals": "^13.22.0",
-    "npm-check-updates": "^16.14.4"
+    "@stylistic/eslint-plugin-js": "^2.10.1",
+    "eslint": "^9.14.0",
+    "globals": "^15.12.0",
+    "npm-check-updates": "^17.1.11"
   },
   "scripts": {
     "start": "node youtube_time_api.js",
     "style": "npx eslint .",
     "style:fix": "npx eslint . --fix",
+    "style2": "npx eslint . -c linters/eslint.config.js",
+    "style2:fix": "npx eslint . -c linters/eslint.config.js --fix",
     "updates": "npx ncu",
-    "updates:fix": "npx ncu -u && npm install"
+    "updates:fix": "npx ncu -u && npm install && npm audit fix"
   },
   "repository": {
     "type": "git",

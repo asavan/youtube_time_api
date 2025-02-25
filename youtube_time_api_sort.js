@@ -2,37 +2,11 @@
 import { open } from "node:fs/promises";
 import { parse, toSeconds } from "iso8601-duration";
 import { fetch, setGlobalDispatcher, Agent} from "undici";
+import {toHHMMSS} from "./time.js";
+import {isTask, extractUrlFromMdLink} from "./markdown.js";
+import {parse_id_from_line} from "./youtube_url.js";
 
 setGlobalDispatcher(new Agent({connect: { timeout: 80_000 }}));
-
-const toHHMMSS = (sec_num) => {
-    // const sec_num = parseInt(secs, 10)
-    const hours = Math.floor(sec_num / 3600);
-    const minutes = Math.floor(sec_num / 60) % 60;
-    const seconds = sec_num % 60;
-
-    return [hours, minutes, seconds]
-        .map(v => v < 10 ? "0" + v : v)
-        .filter((v, i) => v !== "00" || i > 0)
-        .join(":");
-};
-
-const isTaskUnresolved = (line) => line.trim().startsWith("- [ ]");
-const isTaskResolved = (line) => line.trim().startsWith("- [x]");
-
-const isTask = (line, collectResolved) => isTaskUnresolved(line) || (collectResolved && isTaskResolved(line));
-
-const extractUrlFromMdLink = (line) => {
-    const firstPar = line.indexOf("](");
-    if (firstPar < 0) {
-        return "";
-    }
-    const closePar = line.indexOf(")", firstPar);
-    if (closePar < 0) {
-        return "";
-    }
-    return line.substring(firstPar + 2, closePar);
-};
 
 const getIdFromTask = (line) => {
     const link = extractUrlFromMdLink(line);
@@ -111,36 +85,10 @@ function wrapper(url) {
 }
 */
 
-// const api_url = "https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fields=items(contentDetails)&id=";
-
 const apiUrlFunc = (apiKey) => "https://www.googleapis.com/youtube/v3/videos?key=" +
     apiKey + "&part=contentDetails,snippet&fields=items(contentDetails,snippet)&id=";
 
 // https://github.com/jsmreese/moment-duration-format
-// https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fields=items&id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI
-// https://gist.github.com/productioncoder/d306fcbf3944ba7e1c9f25ef3c9c9072
-
-function parse_id_from_line(text) {
-    const line = text.trim().split(/\s+/)[0];
-    if (line === "") {
-        return "";
-    }
-    const url = new URL(line);
-    if (!url.hostname.includes("youtube.com")) {
-        if (url.hostname.includes("youtu.be")) {
-            return url.pathname.replace("/", "");
-        }
-        return "";
-    }
-
-    const id = url.searchParams.get("v");
-    // console.log(url.href);
-    if (id) {
-        return id;
-    }
-    return url.pathname.replace("/shorts/", "");
-}
-
 
 const split_to_chunk = (list, size) => [...Array(Math.ceil(list.length / size))].
     map((_, i) => list.slice(i * size, i * size + size));
@@ -193,11 +141,12 @@ async function main() {
     }
 
     const sortable = Object.entries(defaultDict).
-        sort(([, a], [, b]) => -(a-b)).map(([n, a]) => ([n, toHHMMSS(a)]));
+        sort(([, a], [, b]) => -(a-b)).
+        map(([n, a]) => ([n, toHHMMSS(a)]));
 
     const names = firstK.map(e => e.snippet.title + " " + toHHMMSS(e.seconds));
-    console.log(names);
 
+    console.log(names);
     console.log(sortable);
 
     const allTime = firstK.map(e => e.seconds).reduce((accumulator, currentValue) => accumulator + currentValue, 0);

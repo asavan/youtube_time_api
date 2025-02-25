@@ -198,7 +198,7 @@ const apiUrlFunc = (apiKey) => "https://www.googleapis.com/youtube/v3/videos?key
     apiKey + "&part=snippet&fields=items(snippet)&id=";
 
 const commUrlFunc = (apiKey) => "https://www.googleapis.com/youtube/v3/commentThreads?key=" +
-    apiKey + "&textFormat=plainText&part=snippet&part=snippet&fields=items(snippet)&maxResults=3&videoId="
+    apiKey + "&textFormat=plainText&part=snippet&part=snippet&fields=items(snippet)&maxResults=3&videoId=";
 
 // const api_url = "https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fields=items(contentDetails)&id=";
 const api_url = apiUrlFunc(process.env.YOUTUBE_API_KEY);
@@ -345,4 +345,6 @@ async function strelki() {
     await parse_comment(ids, words);
 }
 
-strelki();
+await strelki();
+await nataly();
+await ketchup();

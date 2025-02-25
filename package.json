@@ -1,6 +1,6 @@
 {
   "name": "youtube_api_timing",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "calc time spent on youtube",
   "dependencies": {
@@ -8,10 +8,10 @@
     "undici": "^7.3.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin-js": "^4.0.0",
-    "eslint": "^9.20.1",
-    "globals": "^15.15.0",
-    "npm-check-updates": "^17.1.14"
+    "@stylistic/eslint-plugin-js": "^4.0.1",
+    "eslint": "^9.21.0",
+    "globals": "^16.0.0",
+    "npm-check-updates": "^17.1.15"
   },
   "scripts": {
     "start": "node youtube_time_api.js",

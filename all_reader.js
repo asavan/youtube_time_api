@@ -1,6 +1,6 @@
+import { open } from "node:fs/promises";
 import {isTask} from "./markdown.js";
 import {parse_id_from_line} from "./youtube_url.js";
-import { open } from "node:fs/promises";
 import {getIdFromTask} from "./common_reader.js";
 
 async function allReader(filename, mask) {

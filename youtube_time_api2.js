@@ -1,5 +1,8 @@
 import {fetch, setGlobalDispatcher, Agent} from "undici";
 
+import {parse_id_from_line} from "./youtube_url.js";
+import {commentApiUrl, process_chunks, snippetApiUrl} from "./youtube_api.js";
+
 setGlobalDispatcher(new Agent({connect: {timeout: 80_000}}));
 
 const longplay = [
@@ -194,54 +197,12 @@ const lirycs = [
     "https://www.youtube.com/watch?v=EhAdb6fIEe0&t=4s"
 ];
 
-const apiUrlFunc = (apiKey) => "https://www.googleapis.com/youtube/v3/videos?key=" +
-    apiKey + "&part=snippet&fields=items(snippet)&id=";
-
-const commUrlFunc = (apiKey) => "https://www.googleapis.com/youtube/v3/commentThreads?key=" +
-    apiKey + "&textFormat=plainText&part=snippet&part=snippet&fields=items(snippet)&maxResults=3&videoId=";
-
-// const api_url = "https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fields=items(contentDetails)&id=";
-const api_url = apiUrlFunc(process.env.YOUTUBE_API_KEY);
-const comment_api = commUrlFunc(process.env.YOUTUBE_API_KEY);
+const api_url = snippetApiUrl(process.env.YOUTUBE_API_KEY);
+const comment_api = commentApiUrl(process.env.YOUTUBE_API_KEY);
 
 // https://github.com/jsmreese/moment-duration-format
 // https://yt.lemnoslife.com/noKey/videos?part=contentDetails&fields=items&id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI
 // https://gist.github.com/productioncoder/d306fcbf3944ba7e1c9f25ef3c9c9072
-
-function parse_id_from_line(text) {
-    const line = text.trim().split(/\s+/)[0];
-    if (line === "") {
-        return "";
-    }
-    const url = new URL(line);
-    if (!url.hostname.includes("youtube.com")) {
-        if (url.hostname.includes("youtu.be")) {
-            return url.pathname.replace("/", "");
-        }
-        return "";
-    }
-
-    const id = url.searchParams.get("v");
-    // console.log(url.href);
-    if (id) {
-        return id;
-    }
-    return url.pathname.replace("/shorts/", "");
-}
-
-/*
-function split_to_chunk2(arr, chunkSize) {
-    const chunks = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-        const chunk = arr.slice(i, i + chunkSize);
-        chunks.push(chunk);
-    }
-    return chunks;
-}
-*/
-
-const split_to_chunk = (list, size) => [...Array(Math.ceil(list.length / size))]
-    .map((_, i) => list.slice(i * size, i * size + size));
 
 function stringContainAnyWord(str, words) {
     for (const word of words) {
@@ -252,36 +213,8 @@ function stringContainAnyWord(str, words) {
     return false;
 }
 
-async function process_videos(ids, processOne) {
-    const chunks = split_to_chunk(ids, 50);
-    let result = [];
-    for (const chunk of chunks) {
-        const url_to_fetch = api_url + chunk.join();
-        const resp = await fetch(url_to_fetch).then((response) => response.json());
-        for (const item of resp.items) {
-            result = result.concat(processOne(item));
-        }
-    }
-    return result;
-}
-
-async function parse_desc(ids, words) {
-    const chunks = split_to_chunk(ids, 50);
-    for (const chunk of chunks) {
-        const url_to_fetch = api_url + chunk.join();
-        const resp = await fetch(url_to_fetch).then((response) => response.json());
-        // console.log(resp);
-        if (!resp.items) {
-            console.log(resp);
-            return;
-        }
-        for (const item of resp.items) {
-            const desc = item.snippet.description.toLowerCase();
-            if (stringContainAnyWord(desc, words)) {
-                console.log("parse_desc", item.snippet.title);
-            }
-        }
-    }
+function process_videos(ids, processOne) {
+    return process_chunks(api_url, ids, processOne);
 }
 
 function printWithLabel(label, words) {
@@ -290,7 +223,7 @@ function printWithLabel(label, words) {
     }
 }
 
-async function parse_desc2(ids, words) {
+async function parse_desc(ids, words) {
     const processOne = item => {
         const desc = item.snippet.description.toLowerCase();
         if (stringContainAnyWord(desc, words)) {
@@ -327,7 +260,7 @@ async function parse_comment(ids, words) {
 async function nataly() {
     const ids2 = lirycs.map(parse_id_from_line);
     const words = ["натали", "ветер"];
-    await parse_desc2(ids2, words);
+    await parse_desc(ids2, words);
     await parse_comment(ids2, words);
 }
 

@@ -17,6 +17,7 @@
     "start": "node youtube_time_api.js",
     "style": "npx eslint . -c linters/eslint.config.js",
     "style:fix": "npx eslint . -c linters/eslint.config.js --fix",
+    "trash": "node --env-file=.env find_trash_not_in_today.js",
     "updates": "npx ncu",
     "updates:fix": "npx ncu -u && npm install && npm audit fix"
   },

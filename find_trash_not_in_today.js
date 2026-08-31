@@ -64,23 +64,33 @@ function getDailyNotePath(prefix, date = new Date()) {
     return `${prefix}${dateStr}.md`;
 }
 
+async function runAdbCommand(additionalParams) {
+    const args = [];
+    if (process.env.ANDROID_DEVICE_ID) {
+        args.push("-s");
+        args.push(process.env.ANDROID_DEVICE_ID);
+    }
+    if (additionalParams) {
+        for (const param of additionalParams) {
+            args.push(param);
+        }
+    }
+    const {stdout, stderr} = await execFilePromise(process.env.ADB_LOCATION || "adb", args);
+
+    if (stderr) {
+        console.warn(stderr);
+    }
+    return stdout;
+}
 
 async function main() {
     try {
         const args = [];
-        if (process.env.ANDROID_DEVICE_ID) {
-            args.push("-s");
-            args.push(process.env.ANDROID_DEVICE_ID);
-        }
         args.push("shell");
         args.push("ls");
         args.push(process.env.ANDROID_FOLDER);
-        const {stdout, stderr} = await execFilePromise(process.env.ADB_LOCATION || "adb", args);
 
-        if (stderr) {
-            console.warn(stderr);
-        }
-
+        const stdout= await runAdbCommand(args);
         const ids = await extractVideoIds4(stdout);
         if (ids.length === 0) {
             console.log("Корзина пуста");
@@ -92,25 +102,17 @@ async function main() {
         const reader = allReaderBinded(mask);
         const idsToday = await reader(file);
 
-        console.log(`Обработка завершена. Найдено ID: ${ids.length}`);
+        console.log(`Найдено: ${ids.length} файлов в корзине и ${idsToday} файлов в заметке`);
 
         const idsNotToday = getDifference(ids, idsToday);
-        console.log('Список ID:', idsNotToday);
+        console.log('Список после очистки:', idsNotToday);
         if (idsNotToday.length === 0) {
             // clear trash
             const args = [];
-            if (process.env.ANDROID_DEVICE_ID) {
-                args.push("-s");
-                args.push(process.env.ANDROID_DEVICE_ID);
-            }
             args.push("shell");
             args.push("rm");
             args.push(process.env.ANDROID_FOLDER + "/*");
-            const {stdout, stderr} = await execFilePromise(process.env.ADB_LOCATION || "adb", args);
-
-            if (stderr) {
-                console.warn(stderr);
-            }
+            const stdout = await runAdbCommand(args);
             console.log(stdout);
             return;
         }

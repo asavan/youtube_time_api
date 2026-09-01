@@ -102,11 +102,12 @@ async function main() {
         const reader = allReaderBinded(mask);
         const idsToday = await reader(file);
 
-        console.log(`Найдено: ${ids.length} файлов в корзине и ${idsToday} файлов в заметке`);
+        console.log(`Найдено: ${ids.length} файлов в корзине и ${idsToday.length} файлов в заметке`);
 
         const idsNotToday = getDifference(ids, idsToday);
         console.log('Список после очистки:', idsNotToday);
         if (idsNotToday.length === 0) {
+            console.log('Очистка корзины...');
             // clear trash
             const args = [];
             args.push("shell");
